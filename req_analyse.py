@@ -1,4 +1,5 @@
 import requests
+import os
 from config import ALL_MESSAGES, CHANNEL_ID
 from tgbot import bot
 import asyncio
@@ -7,9 +8,13 @@ import asyncio
 last_message_id = -1
 
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+certfile_path = os.path.join(current_dir, 'cert.pem')
+keyfile_path = os.path.join(current_dir, 'privkey.pem')
+
 async def get(call):
     try:
-        req = requests.get(call).json()
+        req = requests.get(call, verify=False).json()
         return req
     except Exception as exc:
         print(f"ERROR! Невозможно получить данные по ссылке {call}")
@@ -35,6 +40,7 @@ async def get_data(json_value, data_names):
 async def get_changes(last_id, call, *value_data_names):
     json_values = await get(call)
     if json_values:
+        print(json_values)
         new_values_data = []
         max_id = last_id
         for value in json_values:
@@ -50,7 +56,8 @@ async def get_changes(last_id, call, *value_data_names):
 async def send_message_to_admins(message):
     await bot.send_message(
         chat_id=CHANNEL_ID,
-        text=message
+        text=message,
+        parse_mode='html'
     )
 
 
